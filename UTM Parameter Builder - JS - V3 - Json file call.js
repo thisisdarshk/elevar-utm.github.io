@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function loadSourceCategoryMap() {
             try {
-                const response = await fetch('source_category_video.json');
+                const response = await fetch('source_category_map.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status} while fetching source_category_map.json. Ensure the file exists and is accessible.`);
                 }
