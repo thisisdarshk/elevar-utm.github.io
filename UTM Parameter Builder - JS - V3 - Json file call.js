@@ -2,6 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- GLOBAL CONSTANTS & DOM ELEMENTS ---
+    // ... (theme toggle, tabs, date/year, config elements - unchanged) ...
     const themeToggleBtn = document.getElementById('theme-toggle');
     const themeToggleIcon = document.getElementById('theme-toggle-icon');
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -9,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentDateElement = document.getElementById('currentDate');
     const currentYearElement = document.getElementById('currentYear');
 
-    // Configuration Save/Load Elements
     const configNameInput = document.getElementById('configName');
     const saveConfigBtn = document.getElementById('saveConfigBtn');
     const loadConfigSelect = document.getElementById('loadConfigSelect');
@@ -19,27 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const CONFIG_STORAGE_KEY = 'utmBuilderConfigurations';
 
     // --- GLOBAL HELPER FUNCTIONS ---
-
-    /**
-     * Toggles the theme between light and dark mode.
-     * Updates localStorage and the theme icon.
-     */
+    // ... (toggleTheme, applySavedTheme, updateThemeIcon, setCurrentDateAndYear, initLucideIcons, copyToClipboard, createTooltip, createInfoIcon, setupAccordion - unchanged) ...
     function toggleTheme() {
         const isDark = document.documentElement.classList.toggle('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         updateThemeIcon(isDark);
-        initLucideIcons(); // Re-render icons as they might change with theme
+        initLucideIcons();
     }
-
-    /**
-     * Applies the saved theme from localStorage on page load.
-     * Defaults to system preference if no theme is saved.
-     */
     function applySavedTheme() {
         const savedTheme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
-
         if (isDark) {
             document.documentElement.classList.add('dark');
         } else {
@@ -47,26 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updateThemeIcon(isDark);
     }
-
-    /**
-     * Updates the theme toggle button's icon (sun/moon).
-     * @param {boolean} isDark - True if dark mode is active, false otherwise.
-     */
     function updateThemeIcon(isDark) {
         if (themeToggleIcon) {
             themeToggleIcon.innerHTML = isDark ?
-                '<i data-lucide="sun"></i> Light' : // Show sun icon in dark mode, meaning click for light
-                '<i data-lucide="moon"></i> Dark';  // Show moon icon in light mode, meaning click for dark
+                '<i data-lucide="sun"></i> Light' :
+                '<i data-lucide="moon"></i> Dark';
         }
-        // Ensure Lucide icons are re-rendered after changing innerHTML
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
             lucide.createIcons();
         }
     }
-
-    /**
-     * Sets the current date and year in the footer.
-     */
     function setCurrentDateAndYear() {
         const now = new Date();
         if (currentDateElement) {
@@ -76,10 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentYearElement.textContent = now.getFullYear();
         }
     }
-
-    /**
-     * Initializes or re-renders Lucide icons on the page.
-     */
     function initLucideIcons() {
         if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
             lucide.createIcons();
@@ -87,14 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("Lucide icons library not found or createIcons method is missing.");
         }
     }
-
-    /**
-     * Copies text to the clipboard.
-     * Shows success or error messages in the provided elements.
-     * @param {string} textToCopy - The text to be copied.
-     * @param {HTMLElement} successMsgEl - The HTML element to display the success message.
-     * @param {HTMLElement} errorMsgEl - The HTML element to display the error message.
-     */
     async function copyToClipboard(textToCopy, successMsgEl, errorMsgEl) {
         if (!textToCopy) {
             if (errorMsgEl) {
@@ -105,10 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return;
         }
-
         if (successMsgEl) successMsgEl.style.display = 'none';
         if (errorMsgEl) errorMsgEl.style.display = 'none';
-
         try {
             await navigator.clipboard.writeText(textToCopy);
             if (successMsgEl) {
@@ -118,18 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error('Failed to copy text using navigator.clipboard: ', err);
-            // Fallback method
             try {
                 const textArea = document.createElement("textarea");
                 textArea.value = textToCopy;
-                textArea.style.position = "fixed"; // Prevent scrolling to bottom
-                textArea.style.opacity = "0"; // Make it invisible
+                textArea.style.position = "fixed"; 
+                textArea.style.opacity = "0"; 
                 document.body.appendChild(textArea);
                 textArea.focus();
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-
                 if (successMsgEl) {
                     successMsgEl.textContent = "Copied (fallback)!";
                     successMsgEl.style.display = 'inline-block';
@@ -145,42 +109,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    /**
-     * Creates a tooltip span element.
-     * @param {string} text - The text content for the tooltip.
-     * @returns {HTMLSpanElement} The created tooltip span element.
-     */
     function createTooltip(text) {
         const tooltipSpan = document.createElement('span');
         tooltipSpan.className = 'tooltiptext';
         tooltipSpan.textContent = text;
         return tooltipSpan;
     }
-
-    /**
-     * Creates an info icon span element.
-     * Standardized icon size to w-4 h-4.
-     * @returns {HTMLSpanElement} The created info icon span element.
-     */
     function createInfoIcon() {
         const infoIconSpan = document.createElement('span');
         infoIconSpan.className = 'info-icon'; 
-        
         const iTag = document.createElement('i');
         iTag.setAttribute('data-lucide', 'info');
         iTag.className = 'w-4 h-4 info-icon-svg-tag'; 
-        
         infoIconSpan.appendChild(iTag);
         return infoIconSpan;
     }
-
-    /**
-     * Sets up an accordion functionality for a given header, content, and arrow element.
-     * @param {HTMLElement} headerEl - The accordion header element.
-     * @param {HTMLElement} contentEl - The accordion content element.
-     * @param {HTMLElement} arrowEl - The accordion arrow element (optional).
-     */
     function setupAccordion(headerEl, contentEl, arrowEl) {
         if (headerEl && contentEl) {
             headerEl.addEventListener('click', () => {
@@ -207,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CONFIGURATION MANAGEMENT ---
+    // ... (getSavedConfigs, saveCurrentConfig, loadConfig, deleteConfig, populateConfigSelect, showConfigFeedback, collectFormDataForActiveTab - unchanged) ...
     function getSavedConfigs() {
         return JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY)) || {};
     }
@@ -304,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return data;
     }
 
+
     // --- GA4 UTM BUILDER (with URL Analyzer) ---
     const ga4Builder = (() => {
         const channelSelect = document.getElementById("ga4-channel");
@@ -328,10 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const predictFromUrlBtn = document.getElementById("ga4-predict-from-url-btn");
         const analyzedUrlFeedbackEl = document.getElementById("ga4-analyzed-url-prediction-feedback");
         
-        let sourceCategoryMap = {}; // MODIFIED: Initialize as empty, will be loaded from JSON
+        let sourceCategoryMap = {}; // Will be loaded from JSON
         let builderInitialized = false;
 
-        const utmParamsConfig = [
+        const utmParamsConfig = [ /* ... Unchanged ... */ 
             { id: "utm_source", label: "Campaign Source (utm_source)", tooltip: "Identify the advertiser, site, publication, etc. that is sending traffic to your property, for example: google, newsletter4, billboard.", placeholder: "e.g., google, facebook", required: true, core: true, isSearchable: true },
             { id: "utm_medium", label: "Campaign Medium (utm_medium)", tooltip: "The advertising or marketing medium, for example: cpc, banner, email newsletter.", placeholder: "e.g., cpc, email, social", required: true, core: true, isSearchable: true },
             { id: "utm_campaign", label: "Campaign Name (utm_campaign)", tooltip: "The individual campaign name, slogan, promo code, etc. for a product.", placeholder: "e.g., spring_sale", required: true, core: true },
@@ -339,14 +284,13 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: "utm_term", label: "Campaign Term (utm_term)", tooltip: "Identify paid search keywords. If you're manually tagging paid keyword campaigns, you should also use utm_term to specify the keyword.", placeholder: "e.g., running+shoes", required: false, core: false },
             { id: "utm_id", label: "Campaign ID (utm_id)", tooltip: "The campaign ID is used to identify a specific campaign or promotion. This is a required key for GA4 data import.", placeholder: "e.g., abc.123", required: false, core: false },
         ];
-        const ga4ParamsConfig = [
+        const ga4ParamsConfig = [ /* ... Unchanged ... */ 
              { id: "utm_source_platform", label: "Source Platform (utm_source_platform)", tooltip: "The platform where the marketing activity is managed (e.g., 'Google Ads', 'Manual', 'DV360', 'Search Ads 360'). This parameter is collected automatically for Google Ads if auto-tagging is enabled, but can be manually overridden.", placeholder: "e.g., Google Ads", required: false },
              { id: "utm_creative_format", label: "Creative Format (utm_creative_format)", tooltip: "The type of creative (e.g., 'display', 'video', 'search', 'native', 'social_post'). For example, 'display', 'native', 'video', 'search'.", placeholder: "e.g., display_banner_300x250", required: false },
              { id: "utm_marketing_tactic", label: "Marketing Tactic (utm_marketing_tactic)", tooltip: "The targeting criteria applied to a campaign (e.g., 'remarketing', 'prospecting', 'lookalike_audience'). For example, 'remarketing', 'prospecting'.", placeholder: "e.g., remarketing_dynamic", required: false },
         ];
         const allParamIds = [...utmParamsConfig.map(p => p.id), ...ga4ParamsConfig.map(p => p.id)];
-
-        const channels = { 
+        const channels = { /* ... Unchanged ... */ 
             "Direct": {
                 description: "Users who typed your site's URL directly or used bookmarks.",
                 condition: 'Source exactly matches "(direct)" AND Medium is one of ("(not set)", "(none)")',
@@ -476,8 +420,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ga4RecommendedMediums: []
             }
         };
-        // MODIFIED: Hardcoded sourceCategoryMap REMOVED. It will be loaded from JSON.
-
         const paidMediumRegex = /^(cpc|cpa|cpv|cpl|cpp|cpd|cpn|ecpc|ppc|retargeting|.*paid.*)$/i;
         const emailSourceMediumRegex = /^(email|e[-_\s]?mail)$/i;
         const campaignShopRegex = /^(shop|shopping|.*shop.*|.*shopping.*|organic-shopping|product_listing_organic|feed)$/i;
@@ -486,38 +428,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const referralMediums = ['referral', 'app', 'link'];
         const displayMediums = ['display', 'banner', 'expandable', 'interstitial', 'cpm'];
         const crossNetworkMediums = ['cross-network', 'demand gen', 'performance max', 'smart shopping'];
-        
-        // Regexes will be dynamically generated after sourceCategoryMap is loaded
         let genericSearchSitesRegex;
         let genericShoppingSitesRegex;
         let genericSocialSitesRegex;
         let genericVideoSitesRegex;
 
-        function generateSourceCategoryRegexes() {
-            if (Object.keys(sourceCategoryMap).length === 0) {
-                console.warn("sourceCategoryMap is empty. Regexes for site categories cannot be generated.");
-                // Initialize with empty regexes or some safe default to prevent errors
-                genericSearchSitesRegex = new RegExp('^()$', 'i');
-                genericShoppingSitesRegex = new RegExp('^()$', 'i');
-                genericSocialSitesRegex = new RegExp('^()$', 'i');
-                genericVideoSitesRegex = new RegExp('^()$', 'i');
-                return;
-            }
-            genericSearchSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_SEARCH').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`, 'i');
-            genericShoppingSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_SHOPPING').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`, 'i');
-            genericSocialSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_SOCIAL').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`, 'i');
-            genericVideoSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_VIDEO').map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`, 'i');
-        }
-
-
-        const mediumSuggestionsBySourceCategory = { 
+        const mediumSuggestionsBySourceCategory = { /* ... Unchanged ... */ 
           "SOURCE_CATEGORY_SEARCH": ["cpc", "cpa", "cpv", "cpl", "cpp", "cpd", "cpn", "ecpc", "ppc", "retargeting", "paid", "paidsearch", "paid_search", "paid-search", "paidsearches", "paidmedia", "paid_media", "paid-media", "organic"],
           "SOURCE_CATEGORY_SOCIAL": ["cpc", "cpa", "cpv", "cpl", "cpp", "cpd", "cpn", "ecpc", "ppc", "retargeting", "paid", "paidsocial", "paid_social", "paid-social", "paidmedia", "paid_media", "paid-media", "organic-social", "social-paid", "social-organic", "post", "story", "boost", "social_ad", "sm", "social-network", "social-media", "promoted_post", "social_ads", "social", "social network", "social media"],
           "SOURCE_CATEGORY_VIDEO": ["cpc", "cpa", "cpv", "cpl", "cpp", "cpd", "cpn", "ecpc", "ppc", "retargeting", "paid", "paidvideo", "paid_video", "paid-video", "video", "video_ad", "instream", "outstream", "trueview", "bumper_ad", "video_ads", "organic-video", "video_organic", "user_generated_video"],
           "SOURCE_CATEGORY_SHOPPING": ["cpc", "cpa", "cpv", "cpl", "cpp", "cpd", "cpn", "ecpc", "ppc", "retargeting", "paid", "paidshopping", "paid_shopping", "paid-shopping", "shopping", "product_listing_ad", "pla", "feed", "merchant_center", "shopping_ads", "organic-shopping", "product_listing_organic", "shop"],
           "DEFAULT": ["cpc", "ppc", "paid", "email", "e-mail", "e_mail", "e mail", "social", "referral", "link", "app", "display", "banner", "expandable", "interstitial", "cpm", "organic", "qr_code", "push", "notification", "mobile", "mobile_push", "app_notification", "partner", "podcast", "audio", "sms", "retargeting", "video", "shopping", "affiliate", "cross-network", "demand gen", "performance max", "smart shopping", "(not set)", "(none)"]
         };
-        const mediumSuggestionsBySourceOverride = { 
+        const mediumSuggestionsBySourceOverride = { /* ... Unchanged ... */ 
             "google": ["cpc", "organic", "display", "video", "shopping", "youtube_ad", "discovery_ad", "performance_max", "feed", "paidsearch", "ppc", "paid", "search_ads", "video_ads", "shopping_ads"],
             "facebook": ["cpc", "social", "paid-social", "paidsocial", "post", "story", "boost", "lead_ad", "messenger_ad", "ppc", "paid", "social_ads"],
             "facebook.com": ["cpc", "social", "paid-social", "paidsocial", "post", "story", "boost", "lead_ad", "messenger_ad", "ppc", "paid", "social_ads"],
@@ -543,46 +466,60 @@ document.addEventListener('DOMContentLoaded', () => {
             "amazon.com": ["cpc", "sponsored_products", "display", "shopping", "marketplace", "pla", "ppc", "paid", "shopping_ads"],
         };
 
-        // MODIFIED: New async function to load the map
         async function loadSourceCategoryMap() {
             try {
-                const response = await fetch('source_category_video.json'); // Adjust path if needed
+                const response = await fetch('source_category_video.json');
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} while fetching source_category_map.json`);
+                    throw new Error(`HTTP error! status: ${response.status} while fetching source_category_map.json. Ensure the file exists and is accessible.`);
                 }
                 sourceCategoryMap = await response.json();
                 console.log("GA4 Source Category Map loaded successfully.");
-                generateSourceCategoryRegexes(); // Generate regexes after map is loaded
+                generateSourceCategoryRegexes();
+                // Refresh dropdowns if they were already rendered with fallback/loading data
+                if (builderInitialized) {
+                    const sourceInput = document.getElementById('ga4-utm_source');
+                    if (sourceInput) populateSourceDropdown(sourceInput.value);
+                     const mediumInput = document.getElementById('ga4-utm_medium');
+                    if (mediumInput) populateMediumDropdown(mediumInput.value);
+                    updateComplianceFeedback(); // Update prediction with loaded map
+                }
             } catch (error) {
                 console.error("Could not load GA4 source category map:", error);
-                sourceCategoryMap = {}; // Fallback
+                sourceCategoryMap = {}; // Fallback to empty
                 generateSourceCategoryRegexes(); // Generate empty/default regexes
-                if(complianceFeedbackEl) { // Show error to user
-                    complianceFeedbackEl.innerHTML = "Error: Could not load GA4 channel data. Predictions may be affected.";
+                if(complianceFeedbackEl) {
+                    complianceFeedbackEl.innerHTML = "<strong>Error:</strong> Could not load GA4 channel data from 'source_category_map.json'. Source/Medium suggestions and channel predictions will use limited defaults. Please ensure the JSON file is correctly placed and valid, and that you are using a local server for testing.";
                     complianceFeedbackEl.className = "feedback-base feedback-error";
                 }
             }
         }
-        
-        function predictGa4Channel(source, medium, campaign) {
+        function generateSourceCategoryRegexes() {
+            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            if (Object.keys(sourceCategoryMap).length === 0) {
+                console.warn("sourceCategoryMap is empty. Regexes for site categories will be empty.");
+                const emptyPattern = '^()$'; // Matches nothing
+                genericSearchSitesRegex = new RegExp(emptyPattern, 'i');
+                genericShoppingSitesRegex = new RegExp(emptyPattern, 'i');
+                genericSocialSitesRegex = new RegExp(emptyPattern, 'i');
+                genericVideoSitesRegex = new RegExp(emptyPattern, 'i');
+                return;
+            }
+            genericSearchSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_SEARCH').map(escapeRegex).join('|')})$`, 'i');
+            genericShoppingSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_SHOPPING').map(escapeRegex).join('|')})$`, 'i');
+            genericSocialSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_SOCIAL').map(escapeRegex).join('|')})$`, 'i');
+            genericVideoSitesRegex = new RegExp(`^(${Object.keys(sourceCategoryMap).filter(k => sourceCategoryMap[k] === 'SOURCE_CATEGORY_VIDEO').map(escapeRegex).join('|')})$`, 'i');
+        }
+        function predictGa4Channel(source, medium, campaign) { /* ... Unchanged, but relies on regexes generated by generateSourceCategoryRegexes ... */ 
             source = source ? source.toLowerCase().trim() : "";
             medium = medium ? medium.toLowerCase().trim() : "";
             campaign = campaign ? campaign.toLowerCase().trim() : "";
-
             const sourceIsDirect = source === "(direct)";
             const mediumIsNoneOrNotSet = medium === "(not set)" || medium === "(none)";
             const isPaid = paidMediumRegex.test(medium);
-            
-            // Ensure sourceCategoryMap and regexes are populated
             const sourceCat = (Object.keys(sourceCategoryMap).length > 0) ? (sourceCategoryMap[source.replace(/^www\./, '')] || sourceCategoryMap[source]) : undefined;
-
-            // Ensure regexes are available
-            if (!genericSearchSitesRegex || !genericShoppingSitesRegex || !genericSocialSitesRegex || !genericVideoSitesRegex) {
-                console.warn("Predicting GA4 channel before source category regexes are generated.");
-                // Fallback or wait for regex generation if critical, for now, it might lead to less accurate predictions initially
+            if (!genericSearchSitesRegex) { // Ensure regexes are initialized
+                generateSourceCategoryRegexes();
             }
-
-
             if (sourceIsDirect && mediumIsNoneOrNotSet) return "Direct";
             if (campaign.includes("cross-network") || crossNetworkMediums.includes(medium)) return "Cross-network";
             if (isPaid && (sourceCat === "SOURCE_CATEGORY_SHOPPING" || (genericShoppingSitesRegex && genericShoppingSitesRegex.test(source)) || campaignShopRegex.test(campaign))) return "Paid Shopping";
@@ -603,8 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (medium.endsWith("push") || medium.includes("mobile") || medium.includes("notification") || source === "firebase" || medium === "web_push") return "Mobile Push Notifications";
             return "Unassigned";
         }
-
-        function createUtmInput(id, labelText, tooltipText, placeholder, isRequired = false, isSearchable = false) {
+        function createUtmInput(id, labelText, tooltipText, placeholder, isRequired = false, isSearchable = false) { /* ... Unchanged ... */ 
             const inputId = `ga4-${id}`; 
             const isRequiredClass = isRequired ? 'required' : '';
             const requiredAttr = isRequired ? 'required' : '';
@@ -639,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${inputHtml}
             </div>`;
         }
-        function renderInputs() {
+        function renderInputs() { /* ... Unchanged ... */ 
             if (coreUtmInputsContainer) {
                 coreUtmInputsContainer.innerHTML = utmParamsConfig
                     .filter(p => p.core)
@@ -660,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addInputListeners(); 
             initLucideIcons(); 
         }
-        function populateChannelDropdown() { 
+        function populateChannelDropdown() { /* ... Unchanged ... */ 
             if (!channelSelect) return;
             while (channelSelect.options.length > 1) {
                 channelSelect.remove(1);
@@ -676,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("GA4 Builder: 'channels' object is not defined or empty.");
             }
         }
-        function updateChannelInfo() { 
+        function updateChannelInfo() { /* ... Unchanged ... */ 
             if (!channelSelect || !channelDesc || !channelCond || !channelInfoWrapper) return;
             const selectedChannelName = channelSelect.value;
             const selectedChannelData = channels[selectedChannelName];
@@ -697,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mediumInput) populateMediumDropdown(mediumInput.value);
             updateComplianceFeedback();
         }
-        function validateBaseUrl() { 
+        function validateBaseUrl() { /* ... Unchanged ... */ 
             if (!baseUrlInput || !baseUrlError) return true; 
             const url = baseUrlInput.value.trim();
             const isValid = url === '' || url.startsWith('http://') || url.startsWith('https://');
@@ -710,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return isValid;
          }
-        function checkUtmInputForSpaces(inputElement) { 
+        function checkUtmInputForSpaces(inputElement) { /* ... Unchanged ... */ 
             if (!inputElement) return;
             const value = inputElement.value;
             const warningIcon = document.getElementById(`${inputElement.id}-warning`);
@@ -728,17 +664,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const sourceInput = document.getElementById('ga4-utm_source');
             const dropdown = document.getElementById('ga4-utm_source-dropdown');
             if (!sourceInput || !dropdown) return;
-            if (Object.keys(sourceCategoryMap).length === 0 && filter === '') { // Only show loading if map truly not there and no filter
-                dropdown.innerHTML = '<div class="combobox-dropdown-item text-gray-400">Loading sources...</div>';
-                dropdown.classList.remove('hidden');
-                return;
-            }
+
             dropdown.innerHTML = ''; 
             const filterLower = filter.toLowerCase().trim();
             let count = 0;
             let sourceSuggestions = [];
             const selectedChannelName = channelSelect.value;
             const selectedChannelData = channels[selectedChannelName];
+
+            if (Object.keys(sourceCategoryMap).length === 0 && !filter) { // If map is empty and no filter, show loading/error
+                dropdown.innerHTML = '<div class="combobox-dropdown-item text-gray-400">Source list unavailable or loading...</div>';
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
             if (selectedChannelData && selectedChannelName !== "") {
                 if (Array.isArray(selectedChannelData.ga4RecommendedSources) && selectedChannelData.ga4RecommendedSources.length > 0) {
                     sourceSuggestions = selectedChannelData.ga4RecommendedSources;
@@ -748,14 +687,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
                 } else if (Object.keys(sourceCategoryMap).length > 0) { 
                      sourceSuggestions = Object.keys(sourceCategoryMap).sort();
-                } else { // Fallback if map is empty
-                    sourceSuggestions = ["(direct)", "google", "facebook", "bing", "newsletter"];
+                } else { 
+                    sourceSuggestions = ["(direct)", "google", "facebook", "bing", "newsletter"]; // Fallback if map still empty
                 }
             } else { 
                  if (Object.keys(sourceCategoryMap).length > 0) {
                     sourceSuggestions = Object.keys(sourceCategoryMap).sort();
                  } else {
-                    sourceSuggestions = ["(direct)", "google", "facebook", "bing", "newsletter"];
+                    sourceSuggestions = ["(direct)", "google", "facebook", "bing", "newsletter"]; // Fallback if map still empty
                  }
             }
             const uniqueSortedSuggestions = [...new Set(sourceSuggestions)]
@@ -781,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dropdown.classList.add('hidden');
             }
         }
-        function populateMediumDropdown(filter = '') { 
+        function populateMediumDropdown(filter = '') { /* ... Unchanged (relies on sourceCategoryMap indirectly via channel data or overrides) ... */ 
             const mediumInput = document.getElementById('ga4-utm_medium');
             const dropdown = document.getElementById('ga4-utm_medium-dropdown');
             if (!mediumInput || !dropdown) return;
@@ -831,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dropdown.classList.add('hidden');
             }
         }
-        function updateComplianceFeedback() { 
+        function updateComplianceFeedback() { /* ... Unchanged ... */ 
              if (!complianceFeedbackEl) return;
             const sourceEl = document.getElementById("ga4-utm_source");
             const mediumEl = document.getElementById("ga4-utm_medium");
@@ -842,8 +781,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let feedbackText = "";
             let feedbackClass = "feedback-info"; 
             if (!sourceVal && !mediumVal) {
-                complianceFeedbackEl.innerHTML = "Enter at least Source and Medium to see GA4 channel prediction.";
-                complianceFeedbackEl.className = "feedback-base feedback-info";
+                // If sourceCategoryMap is empty, this message will be overridden by the loadSourceCategoryMap error.
+                if (Object.keys(sourceCategoryMap).length > 0 || (sourceCategoryMap.length === undefined && Object.keys(sourceCategoryMap).length === 0 && !complianceFeedbackEl.classList.contains('feedback-error') ) ) {
+                    complianceFeedbackEl.innerHTML = "Enter at least Source and Medium to see GA4 channel prediction.";
+                    complianceFeedbackEl.className = "feedback-base feedback-info";
+                }
                 return;
             }
             const predictedChannel = predictGa4Channel(sourceVal, mediumVal, campaignVal);
@@ -859,10 +801,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedbackText += `<br>This aligns with your selected channel group '<strong>${selectedChannelGroup}</strong>'. Good job!`;
                 feedbackClass = "feedback-success";
             }
-            complianceFeedbackEl.innerHTML = feedbackText;
-            complianceFeedbackEl.className = `feedback-base ${feedbackClass}`;
+            // Only update if not already showing a critical load error
+            if (!complianceFeedbackEl.classList.contains('feedback-error') || (Object.keys(sourceCategoryMap).length > 0) ) {
+                 complianceFeedbackEl.innerHTML = feedbackText;
+                 complianceFeedbackEl.className = `feedback-base ${feedbackClass}`;
+            }
         }
-        function generateUrl() { 
+        function generateUrl() { /* ... Unchanged ... */ 
             if (!baseUrlInput || !finalUrlTextarea || !copyBtn) return;
             const isBaseUrlValid = validateBaseUrl();
             const base = baseUrlInput.value.trim(); 
@@ -927,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
             copyBtn.disabled = !canCopy;
             updateComplianceFeedback(); 
         }
-        function toggleOptionalParameters() { 
+        function toggleOptionalParameters() { /* ... Unchanged ... */ 
             if (!optionalParamsSection || !toggleArrowSpan) return;
             const isHidden = optionalParamsSection.classList.toggle('hidden');
             toggleArrowSpan.classList.toggle('open', !isHidden);
@@ -937,7 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 initLucideIcons(); 
             }
         }
-        function addInputListeners() { 
+        function addInputListeners() { /* ... Unchanged ... */ 
              allParamIds.forEach(paramId => {
                 const inputElement = document.getElementById(`ga4-${paramId}`);
                 if (inputElement) {
@@ -964,7 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (baseUrlInput) baseUrlInput.addEventListener("input", generateUrl); 
         }
-        function handleAnalyzeUrl() {
+        function handleAnalyzeUrl() { /* ... Unchanged ... */ 
             if (!analyzeUrlInput || !analyzedUrlFeedbackEl) {
                 console.error("URL Analyzer elements not found.");
                 return;
@@ -1001,12 +946,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // MODIFIED: init is now async
         async function init() {
             if (builderInitialized) return;
             console.log("Initializing GA4 UTM Builder & URL Analyzer");
 
-            await loadSourceCategoryMap(); // MODIFIED: Load the map
+            await loadSourceCategoryMap(); 
 
             if (coreUtmInputsContainer && optionalUtmInputsContainer && ga4InputsContainer) {
                 renderInputs();
@@ -1017,11 +961,10 @@ document.addEventListener('DOMContentLoaded', () => {
             populateChannelDropdown();
             updateChannelInfo(); 
             generateUrl(); 
-            if (complianceFeedbackEl && Object.keys(sourceCategoryMap).length > 0) { // Check if map loaded before setting default
+            
+            if (complianceFeedbackEl && (Object.keys(sourceCategoryMap).length > 0 || !complianceFeedbackEl.classList.contains('feedback-error'))) {
                 complianceFeedbackEl.innerHTML = "Enter UTM parameters to see GA4 channel prediction.";
                 complianceFeedbackEl.className = "feedback-base feedback-info";
-            } else if (complianceFeedbackEl && Object.keys(sourceCategoryMap).length === 0) {
-                 // Error message already shown by loadSourceCategoryMap if it failed
             }
 
             if (analyzedUrlFeedbackEl) { 
@@ -1066,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
     // --- GOOGLE ADS TRACKING TEMPLATE BUILDER ---
+    // ... (googleAdsBuilder IIFE - unchanged from utm_builder_js_v3) ...
     const googleAdsBuilder = (() => {
         const utmSourceInput = document.getElementById('ads-utm_source');
         const utmMediumInput = document.getElementById('ads-utm_medium');
@@ -1372,6 +1316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
     // --- MICROSOFT ADS TRACKING TEMPLATE BUILDER ---
+    // ... (microsoftAdsBuilder IIFE - unchanged from utm_builder_js_v3) ...
     const microsoftAdsBuilder = (() => {
         const standardParamsContainer = document.getElementById('msads-standard-params-container');
         const checkboxParamsContainer = document.getElementById('msads-checkbox-params-container');
@@ -1720,6 +1665,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
     // --- META (FACEBOOK) ADS UTM BUILDER ---
+    // ... (metaAdsBuilder IIFE - unchanged from utm_builder_js_v3) ...
     const metaAdsBuilder = (() => {
         const websiteUrlInput = document.getElementById('meta-websiteUrl');
         const websiteUrlError = document.getElementById('meta-websiteUrl-error');
@@ -2023,7 +1969,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultActiveTab = document.querySelector('.tab-button.active');
     if (defaultActiveTab) {
         const defaultTabId = defaultActiveTab.dataset.tab;
-        if (defaultTabId === 'ga4Tab' && typeof ga4Builder !== 'undefined' && !ga4Builder.isInitialized()) ga4Builder.init(); // ga4Builder.init is now async
+        if (defaultTabId === 'ga4Tab' && typeof ga4Builder !== 'undefined' && !ga4Builder.isInitialized()) ga4Builder.init(); 
         else if (defaultTabId === 'googleAdsTab' && typeof googleAdsBuilder !== 'undefined' && !googleAdsBuilder.isInitialized()) googleAdsBuilder.init();
         else if (defaultTabId === 'microsoftAdsTab' && typeof microsoftAdsBuilder !== 'undefined' && !microsoftAdsBuilder.isInitialized()) microsoftAdsBuilder.init();
         else if (defaultTabId === 'metaAdsTab' && typeof metaAdsBuilder !== 'undefined' && !metaAdsBuilder.isInitialized()) metaAdsBuilder.init();
