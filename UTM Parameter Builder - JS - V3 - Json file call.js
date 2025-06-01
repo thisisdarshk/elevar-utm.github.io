@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // MODIFIED: New async function to load the map
         async function loadSourceCategoryMap() {
             try {
-                const response = await fetch('source_category_map.json'); // Adjust path if needed
+                const response = await fetch('source_category_video.json'); // Adjust path if needed
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status} while fetching source_category_map.json`);
                 }
